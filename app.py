@@ -28,6 +28,9 @@ async def extract_text_from_pdf(file: UploadFile = File(...)):
         return {"extracted_text": text}
     except Exception as e:
         return {"error": str(e)}
+    finally:
+        if os.path.exists(file_path):
+            os.remove(file_path)
 
 
 @app.post("/extract_text_from_image")
