@@ -3,4 +3,3 @@ uvicorn
 pytesseract
 opencv-python
 PyMuPDF
-os
