@@ -1,6 +1,9 @@
 fastapi
 uvicorn
-pytesseract
-opencv-python
-PyMuPDF
 python-multipart
+torch
+torchvision
+Pillow
+transformers
+git+https://github.com/openai/CLIP.git
+timm
