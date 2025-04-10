@@ -1,0 +1,12 @@
+fastapi
+uvicorn
+python-multipart
+torch
+torchvision
+Pillow
+transformers
+git+https://github.com/openai/CLIP.git
+timm
+regex
+tqdm
+scipy
