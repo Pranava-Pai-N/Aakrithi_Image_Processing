@@ -1,11 +1,15 @@
 import torch
 import clip
 from PIL import Image
+import gc
 from transformers import BlipProcessor, BlipForConditionalGeneration
 
-device = "cuda" if torch.cuda.is_available() else "cpu"
+device = "cpu"
 
-clip_model, clip_preprocess = clip.load("ViT-B/32", device=device)
+clip_model = None
+clip_preprocess = None
+blip_processor = None
+blip_model = None
 
 blip_processor = BlipProcessor.from_pretrained("Salesforce/blip-image-captioning-base")
 blip_model = BlipForConditionalGeneration.from_pretrained("Salesforce/blip-image-captioning-base").to(device)
@@ -83,12 +87,14 @@ labels = ["Ayurveda"] * len(ayurvedic_prompts) + ["Non-Ayurveda"] * len(non_ayur
 ayurvedic_keywords = ["herbs", "oil", "ayurveda", "healing", "natural", "plant", "therapy"]
 
 def predict_with_clip(image_path, confidence_threshold=0.60):
+    global clip_model, clip_preprocess
+    if clip_model is None or clip_preprocess is None:
+        clip_model, clip_preprocess = clip.load("ViT-B/32", device=device)
+
     image = clip_preprocess(Image.open(image_path)).unsqueeze(0).to(device)
     text_inputs = clip.tokenize(all_prompts).to(device)
 
     with torch.no_grad():
-        image_features = clip_model.encode_image(image)
-        text_features = clip_model.encode_text(text_inputs)
         logits_per_image, _ = clip_model(image, text_inputs)
         probs = logits_per_image.softmax(dim=-1).cpu().numpy()[0]
 
@@ -105,6 +111,12 @@ def predict_with_clip(image_path, confidence_threshold=0.60):
         return None, best_score, "Low confidence"
 
 def fallback_blip_classification(image_path):
+    global blip_model, blip_processor
+    if blip_model is None or blip_processor is None:
+        from transformers import BlipProcessor, BlipForConditionalGeneration
+        blip_processor = BlipProcessor.from_pretrained("Salesforce/blip-image-captioning-base")
+        blip_model = BlipForConditionalGeneration.from_pretrained("Salesforce/blip-image-captioning-base").to(device)
+
     raw_image = Image.open(image_path).convert('RGB')
     inputs = blip_processor(raw_image, return_tensors="pt").to(device)
 
@@ -118,17 +130,19 @@ def fallback_blip_classification(image_path):
             return "Ayurveda", caption, "BLIP fallback"
 
     return "Non-Ayurveda", caption, "BLIP fallback"
+    return "Non-Ayurveda", caption, "BLIP fallback"
 
 def classify_image(image_path):
     label, score, method = predict_with_clip(image_path)
 
     if method == "CLIP":
-        return {
-            "Type": str(label),
-        }
+        result = {"Type": str(label)}
     else:
         label, caption, method = fallback_blip_classification(image_path)
-        return {
-            "Type": str(label),
-        }
+        result = {"Type": str(label)}
+
+    torch.cuda.empty_cache()
+    gc.collect()
+    return result
+
   
