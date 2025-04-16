@@ -11,3 +11,4 @@ regex
 tqdm
 scipy
 pytesseract
+tesseract
