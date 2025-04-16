@@ -10,3 +10,4 @@ timm
 regex
 tqdm
 scipy
+pytesseract

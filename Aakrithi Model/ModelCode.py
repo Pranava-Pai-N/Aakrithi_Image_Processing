@@ -3,6 +3,7 @@ import clip
 from PIL import Image
 import gc
 from transformers import BlipProcessor, BlipForConditionalGeneration
+import pytesseract
 
 device = "cpu"
 
@@ -130,16 +131,41 @@ def fallback_blip_classification(image_path):
             return "Ayurveda", caption, "BLIP fallback"
 
     return "Non-Ayurveda", caption, "BLIP fallback"
-    return "Non-Ayurveda", caption, "BLIP fallback"
+
+def ocr_classification(image_path):
+    text = pytesseract.image_to_string(Image.open(image_path))
+    text_lower = text.lower()
+
+    for kw in ayurvedic_keywords:
+        if kw in text_lower:
+            return "Ayurveda"
+    return "Non-Ayurveda"
+
 
 def classify_image(image_path):
-    label, score, method = predict_with_clip(image_path)
+    label, ocr_text, method = ocr_classification(image_path)
 
-    if method == "CLIP":
-        result = {"Type": str(label)}
+    if label == "Ayurveda":
+        result = {
+            "Type": label,
+            "Method": method,
+            "Text": ocr_text.strip()
+        }
     else:
-        label, caption, method = fallback_blip_classification(image_path)
-        result = {"Type": str(label)}
+        label, score, method = predict_with_clip(image_path)
+        if method == "CLIP" and label is not None:
+            result = {
+                "Type": label,
+                "Score": score,
+                "Method": method
+            }
+        else:
+            label, caption, method = fallback_blip_classification(image_path)
+            result = {
+                "Type": label,
+                "Caption": caption,
+                "Method": method
+            }
 
     torch.cuda.empty_cache()
     gc.collect()
