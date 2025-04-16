@@ -143,7 +143,7 @@ def ocr_classification(image_path):
 
 
 def classify_image(image_path):
-    label, ocr_text, method = ocr_classification(image_path)
+    label = ocr_classification(image_path)
 
     if label == "Ayurveda":
         result = {
@@ -154,8 +154,6 @@ def classify_image(image_path):
         if method == "CLIP" and label is not None:
             result = {
                 "Type": label,
-                "Score": score,
-                "Method": method
             }
         else:
             label, caption, method = fallback_blip_classification(image_path)
