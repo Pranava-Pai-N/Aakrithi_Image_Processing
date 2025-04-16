@@ -148,8 +148,6 @@ def classify_image(image_path):
     if label == "Ayurveda":
         result = {
             "Type": label,
-            "Method": method,
-            "Text": ocr_text.strip()
         }
     else:
         label, score, method = predict_with_clip(image_path)
@@ -163,8 +161,6 @@ def classify_image(image_path):
             label, caption, method = fallback_blip_classification(image_path)
             result = {
                 "Type": label,
-                "Caption": caption,
-                "Method": method
             }
 
     torch.cuda.empty_cache()
