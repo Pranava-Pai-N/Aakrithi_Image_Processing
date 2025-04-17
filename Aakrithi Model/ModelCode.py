@@ -101,7 +101,14 @@ ayurvedic_prompts = [
     "Sun-dried medicinal roots",
     "Ayurvedic skin care set",
     "Copper tongue scraper",
-    "Cumin and ajwain detox water"
+    "Cumin and ajwain detox water",
+    "Handwritten Ayurvedic prescription",
+    "Ayurvedic remedy instructions",
+    "Doctor's note with herbal treatments",
+    "Sanskrit Ayurvedic script",
+    "Page from Ayurveda book",
+    "Text describing herbal decoctions",
+    "Prescription with cumin and ginger"
 ]
 
 
